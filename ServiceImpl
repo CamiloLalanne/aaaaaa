@@ -13,16 +13,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
- 
 	@Service
 	public class ServiceImpl implements IService {
 
 	    @Autowired
 	    private RestTemplate restTemplate;
-
-	    private static String url = "https://dfw-igengine-pa.nonprod.edc.equifax.com/insightgateway/api/report/LAMUTUAL/LAMUTUAL";
-	    private static final String TOKEN_ACCESS = "eyJhbGciOiJSUzI1NiIsIng1dCI6InJLLXQyQlhGQXhfaVZYTURLUHZDQmFFUUxJcyIsImtpZCI6InJLLXQyQlhGQXhfaVZYTURLUHZDQmFFUUxJcyIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmNDYzOWUzYzg2ODU0MGQyODdlMGQ3OWI5NDY4ZTBlZCIsImNsaWVudF9pZCI6IjI3ZGY4MjE1MjNjYzRjNDU5YmU1MGJjMjZhODIzMGRmIiwic2NvcGUiOlsic2EuZWRpdHByb2ZpbGUiLCJzYS5yZWFkcHJvZmlsZSJdLCJpZHAiOiJTZWN1cmVBdXRoMiIsImF1dGhfdGltZSI6MTU3ODkzODczNCwiYW1yIjpbInBhc3N3b3JkIiwiY2xpZW50Il0sInJvbGVzIjoiQUNUVUFUT1IsQWRtaW5pc3RyYXRvcixDU19FRlhBRE1JTixDYXRhbG9nIEV4cGxvcmVyIEFjY2VzcyBSb2xlLEVGWF9BRE1JTixFcXVpZmF4X0NlcnQgQ2F0YWxvZ19fUEVuckVINkxFZWFWd0t5SkpXTHd0dyxGRkFETUlOLE1JVCBBY2Nlc3MsTUlUIEFkbWluLE1JVF9FRlhBRE1JTixQb3dlciBVc2VyLFJ1bGVzIEVkaXRvciBBY2Nlc3MgUm9sZSxTVFNVU0VSLFVzZXIsVXNlciBNYW5hZ2VyIiwib3JnYW5pemF0aW9ucyI6IkVxdWlmYXgsRXF1aWZheENoaWxlLHBhcmFndWF5LFdPVyxMQVBPTEFSLHZpZGFzZWN1cml0eSxuYXR1cmEsUFNMQVRBTSxTQUVTQSxTQUZFLFNBRkVURVNULFRBQkFOQ1VSQSxUcmFpbmluZ0NoaWxlLEZBTUlMWVNIT1AsV09NLHRyYW5zYmFuayxNdWx0aVRlbmFudCxGTEVYQVIsRkxFWFBZLEZMRVhVWSxHTUFDSUMsR1RELEFCQ0RJTixBTUlDQVIsQkVMQ09SUCxCT1hBUixDQVNJTk9FTkpPWSxDTEFSTyxDTEFST0NISUxFLENMSU5JQ0FWUCxDT1JPTkEsQ09TQUZFLERJUkVDVFYsR0VORVJJQ08sR01BQyxKQVZFUixMQU1VVFVBTCxQQVlMRVZPLENPTlRJTkVOVEFMLEdFTkVSSUNPQ1IsUFJPU0VHVVIsbXVsdGlob2dhcixBU0ZMT0dJU1RJQ0EsQUZBLENBTSxGQUxQLENFTkNPU1VELFJFTkFDRVIsVkVSSVNVUkUsU0NPVElBQkFOSyxDT09QRVVDSCxQRU5UQVZJREEsVEVMRUZPTklDQUVYUCxTQUVTQUVYUCxVTEFTRVJFTkEsRVZBQVVUT01BVElDQSxTT0RJTUFDLENPRkFDRSxQRU5UQVNFQ1VSSVRZLENMSU5JQ0FTQU5KT1NFLENMSU5JQ0FDQlIsUFJJVklMRUdFLFRVVkVTLEFNRVgsSUNGQUNUT1RBTCxURUxFRk9OSUNBQ0hJTEUsVEFCQU5DVVJBSUMsQk9YU1YsQk9YQ1IsQk9YSE4sRkxFWFNWLElDVFJBTlNCQU5LMyxHRU5DSEVRVUVTLEdFTk9SSUdJTkFDSU9OR0VORVJBTCxHRU5NSUNST0ZJTkFOWkFTLEdFTkVYUE1JQ1JPRklOQU5aQVMsRkxFWENSLEZMRVhITixDTElOSUNBU0FOVElBR08sQ0xJTklDQVZJTkFERUxNQVIsQ0xJTklDQUFSSUNBLENMSU5JQ0FBTlRPRkFHQVNUQSxHTUFDRVZBTFVBVEUsQVZPTixHRVhQT1JHRklFQyxHQkNQQU1JQ1JFQyxIVUdIRVNORVQsR0JDQlBOQ1JFRUMsQUxNQUVMSlVSSSxBWlpPUlRJLEJDT1BST0RVQ0NJT04sQkNPTUFDSEFMQSxDQVNUUk9KVUFOLENBQzEzQUJSSUwsQ0FDQU5EQUxVQ0lBLENBQ0FORElOQSxDQUNBTlRPUkNIQSxDSE9ORSxDQUNDT1JQQ0VOVCxDQUNGRVJEQVEsQ0FDSU1CQUJVUkEsQ0FDSU5ESUdFTkEsQ0FDRE9MT1JPU0EsQ0FDTUFRVUlUQSxDQUNIVUFOQ0FWSUxBLENBQzExSlVOSU8sQ0FDU0FOQU5UT05JTyxDQUNTSk9TRSxDQUNTQU5UQUFOQSxDT09QSlNBTElOQVMsQ09PUE1VTFRJRU1QUixDQUNHVUFMQVFVSVpBLFBVRUxMQVJPLERBVEFGQVNULERJRkFSRSxFQ1VNT1RPUkVTLEVMRUNURFVRVUUsSU5WRVJORUcsS01PVE9SLE1FVFJPQ0FSLFNFUlZURUxDTyxZQU5CQUwsVlRSRVhQLENPUEVWQUwsRU5URUxTQSxSRU5UQUVTVElNQURBLEhJVEVTLEVYUExBUE9MQVIsU0FMRkFDT1JQLFRSSUNPVCxDTElOSUNBQklDRSxNQU5URU5DSU9OLENBUFRBQ0lPTixDTElOSUNBVkVTUFUsU09MVkVOVEEsQ1JFRElBVVRPUyxFQVNZLEJDSSxBTkRFU0NPT1AsTUFUSUtBUkQsRU5URUwsQVNJQVVUT1MsQkNPR0VOUlVNSSxCQ09JTlRMLEVUQVRFWCxDQUNBUlRFU0FOT1MsQ0FDUEVDTyxDQUNLVUxMSUtJLENBQ1BPTElDSUFOQUMsQ0FDMTRNQVJaTyxDT1JQQ0ZDLFRSQU5TQkVMLElORFVNT1QsTUZDLFBPUlRDT0xMLFBST0VTQSxQVU5UT05FVCxRVVNLSSxDT01QVUJVU0lORVNTLFRJQSxVTklWSVNBLFVOTk9QQVJUUyxhbGQsQUxNUFJBVEksQkNPQU1BWk9OQVMsQkNPQk9MSVZBUklBTk8sQkNPQVVTVFJPLEJDT1NFR1NPQ0lBTCxCQ09HVUFZQVFVSUwsQkNPSU5UTFZJU0EsQkNPUElDSElOQ0hBLEJDT1NPTElEQVJJTyxDTlQsQ09ORUNFTCxDQUNNVUNIVSxDQUNQSkwsQ09SUFRFTENPLERJUkVDVFZFQ1UsSUNFU0EsTUFSQ0lNRVgsT1RFQ0VMLFNFR0VRVUlOT0NDSUFMLFVOSUNPTUVSLEFMRCxSRVBNQUpVU0EiLCJsb2NrZWRVc2VyIjoiMCIsInN0YXR1cyI6IjAiLCJ1c2VyRW1haWwiOiJwc2ludGxsYXRhbWRldkBlcXVpZmF4LmNvbSIsInN0c191c2VyIjoidHJ1ZSIsInN1YiI6Imljc2Fhc2NkZXZlbG9wbWVudCIsImlzcyI6Imh0dHBzOi8vY3Mtc2EtdXMtcGEtc2VjdXJlYXV0aC5ub25wcm9kLmVkYy5lcXVpZmF4LmNvbS9JQ1BBU1RTIiwiYXVkIjoiaHR0cHM6Ly9jcy1zYS11cy1wYS1zZWN1cmVhdXRoLm5vbnByb2QuZWRjLmVxdWlmYXguY29tL0lDUEFTVFMiLCJleHAiOjE1NzkwMjUxMzQsIm5iZiI6MTU3ODkzODczNH0.cPxnenlpyeO01Ip93q_ak_f1lIENb4nD_qXvwAEcCV7nRNLyEypBcRHm910D-1FmXRP44wesRnj8IAQPxGJFejF5zjDwTCbv9OF1CXj1fNJu0-kOAC2OyOwFlQ21O1LaGxuSufKv5FPZRR2IJxzhJ0DFwaPAMcKIKeq4PZ2Q-IYtgyIeYcbScLvGMnp8-NfI2S5u_duQCJYjU8vp7JGoeOxggb-qBY3iR8ZR0HYS7wWqcY2O8q71SpQriS0F8pTbG3U-NRGxP4qEPbmledzJt99M4SQzyCXBhmwG-NZHd4rshy6wzYHVXIVLuIj_u1v6LXPLI5_2b1yudredVWUoRg";
+	    private static String url = "";
+	    private static final String TOKEN_ACCESS = "";
 	    private static String tocken = "Bearer " + TOKEN_ACCESS;
+	    
 	    @SuppressWarnings({ "resource", "unchecked" })
 		@Override
 	    public void leer(){
@@ -62,38 +61,17 @@ import org.springframework.web.client.RestTemplate;
 	                ResponseEntity<Object> response;
 	                HttpHeaders httpHeaders = new HttpHeaders();
 	                httpHeaders.add("authorization", tocken);
-	                httpHeaders.add("Content-Type", "application/vnd.com.equifax.insightgateway.v1+json");
-
+	                httpHeaders.add("Content-Type", "application/json");
 	                HttpEntity<Object> httpEntity = new HttpEntity<>(json, httpHeaders);
 	                try{
 	                    response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, Object.class);
-	                    Map<String, Object> mapa = (Map<String, Object>) response.getBody();
-	                    Map<String, Object> consumer = (Map<String, Object>) ((Map<String, Object>)mapa.get("applicants")).get("primaryConsumer");
-	                    if (consumer.get("equifax-cl-kpi")!=null){
-	                        Map<String, Object> kpi = (Map<String, Object>) ((Map<String, Object>) consumer.get("equifax-cl-kpi")).get("KPI");
-	                        if (kpi.get("errors")!=null){
-	                            System.out.println("--> Error en Base de Datos ");
-	                        }else if (kpi.get("status")!=null){
-	                            System.out.println("--> Status: "+kpi.get("status")+"\n");
-	                        }else{
-	                            System.out.println("----------------------> Values : "+kpi.values());
-	                            break;
-	                        }
-	                    }else {
-	                        System.out.println("---> Sin KPI");
-	                    }
-
-
+	                    Map<String, Object> mapa = (Map<String, Object>) response.getBody();              
 	                }catch (Exception e){
 	                    System.out.println("---> Se callo la consulta del rut");
 	                }
-
 	            }
 	        }catch (Exception e){
 	            System.out.println(e.getMessage());
 	        }
-	    }
- 
-	    
+	    }	    
 	}
-
