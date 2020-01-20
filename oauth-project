@@ -1,0 +1,144 @@
+package com.example.usu.usuarios; 
+@Configuration
+public class RepositoryConfig implements RepositoryRestConfigurer{
+	//con esta configuracion podremos obtener los id en el responsebody, ya que sin esto no salen por defecto
+	@Override
+	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		config.exposeIdsFor(Usuario.class,Role.class);
+	}	
+}
+
+package com.example.usu.usuarios.dao;
+@RepositoryRestResource(path="usuarios")
+public interface IUsuarioDao extends PagingAndSortingRepository<Usuario, Long>{
+	@RestResource(path="findUsername")
+	public Usuario findByUsername(@Param("user")String username);
+	//con nativeQuery puedes generar una consulta sql de manera nativa
+	@Query(value="select * from usuarios u where u.username = ?1" , nativeQuery=true )
+	@RestResource(path="obtainUser")
+	public Usuario obtainUsername(String username);
+}
+
+package com.example.usu.usuarios.entities;
+@Entity
+@Table(name = "roles")
+public class Role implements Serializable {
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+	@Column(unique = true, length = 30)
+	private String nombre;
+	//mappedby va el nombre del attributo que esta en el pojo usuario.
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
+	private List<Usuario> usuario = new ArrayList<>();
+
+package com.example.usu.usuarios.entities;
+@Entity
+@Table(name = "usuarios")
+public class Usuario implements Serializable {
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+	@Column(unique = true, length = 20)
+	private String username;
+	@Column(length = 60)
+	private String password;
+	private boolean enable;
+	private String nombre;
+	private String apellido;
+	private String email;
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name="usuarios_roles_interm", joinColumns = @JoinColumn(name="usuario_idp"),
+	inverseJoinColumns=@JoinColumn(name="role_idp"),
+	//con esta linea evitas que un usuario tenga el mismo rol y que un rol tenga el mismo usuario
+	uniqueConstraints= {@UniqueConstraint(columnNames= {"usuario_idp","role_idp"})})
+	private List<Role> roles = new ArrayList<Role>();
+  
+  PROJECT USUARIO PROPERTIES:
+spring.application.name=service-users
+server.port=9101
+logging.level.org.hibernate.SQL=debug
+spring.datasource.url = jdbc:h2:mem:testdb
+
+  import.sql
+INSERT INTO ROLES (ID,NOMBRE) VALUES(1,'ADMIN');
+INSERT INTO USUARIOS (ID,USERNAME,PASSWORD,ENABLE,NOMBRE,APELLIDO,EMAIL) VALUES(1,'sapb','123',true,'camilo','lalanne','c.lalaee@gm.com');
+INSERT INTO USUARIOS_ROLES_INTERM (USUARIO_IDP,ROLE_IDP) VALUES(1,1);
+
+INSERT INTO ROLES (ID,NOMBRE) VALUES(2,'USER');
+INSERT INTO USUARIOS (ID,USERNAME,PASSWORD,ENABLE,NOMBRE,APELLIDO,EMAIL) VALUES(2,'natalio','123',true,'nata','lio','na.talio@gm.com');
+INSERT INTO USUARIOS_ROLES_INTERM (USUARIO_IDP,ROLE_IDP) VALUES(2,2);
+
+//OAUTH PROJECT
+@SpringBootApplication
+@EnableFeignClients
+
+package com.example.oauth.oauth.auth;
+@Configuration
+public class SpringSecurityConfig extends WebSecurityConfigurerAdapter{
+	@Autowired
+	private UserDetailsService userService;
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}	
+	@Override
+	@Autowired
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(this.userService).passwordEncoder(passwordEncoder());
+	}
+	@Override
+	@Bean
+	protected AuthenticationManager authenticationManager() throws Exception {		
+		return super.authenticationManager();
+	}
+  
+package com.example.oauth.oauth.clients;  
+@FeignClient(name="service-users")
+public interface UsuarioFeignClient {
+	
+	@GetMapping("/usuarios/findUsername")
+	public Usuario getUserByUsername(@RequestParam String username);
+
+package com.example.oauth.oauth.pojo;
+public class Role implements Serializable {
+	private static final long serialVersionUID = 1L;
+  	private Long id;
+ 	private String nombre;
+ 	private List<Usuario> usuario = new ArrayList<>();
+	public List<Usuario> getUsuario() {
+		return usuario;
+	}
+
+package com.example.oauth.oauth.pojo;
+public class Usuario implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Long id;
+ 	private String username;
+ 	private String password;
+	private boolean enable;
+	private String nombre;
+	private String apellido;
+	private String email;
+  	//con esta linea evitas que un usuario tenga el mismo rol y que un rol tenga el mismo usuario
+ 	private List<Role> roles = new ArrayList<Role>();
+
+package com.example.oauth.oauth.services;
+@Service
+public class UsuarioService implements UserDetailsService{
+	@Autowired
+	private UsuarioFeignClient client;
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		Usuario usuario = client.getUserByUsername(username);
+		if(usuario==null) {
+			throw new UsernameNotFoundException("User "+username +" not found ");
+		}
+//		List<GrantedAuthority> authorities = (List<GrantedAuthority>) usuario.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getNombre()) );
+		List<GrantedAuthority> authorities =  usuario.getRoles().stream().map(role ->
+		new SimpleGrantedAuthority(role.getNombre())).peek(authority -> System.out.print("error "+authority.getAuthority())).collect(Collectors.toList());
+		return new User(usuario.getUsername(), usuario.getPassword(), usuario.isEnable(), true, true, true, authorities);
+	}
+
